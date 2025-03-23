@@ -56,35 +56,35 @@ Presenter взаимодействует с Model для получения ил
 
 AppData - отвечает за работу с данными. Тип связи: ассоциация с классами Api, EventEmitter.
 Поля:
-(+) cart: ICartItem[]
-(+) products: IProductInfo[]
-(+) selectedProduct: IProductInfo | null
+(+) cart: ICartItem[] // Массив товаров, добавленных пользователем в корзину
+(+) products: IProductInfo[] // Список всех доступных товаров
+(+) selectedProduct: IProductInfo | null // Текущий выбранный товар, например, для просмотра в модальном окне
 
 Методы:
-(+) constructor(api: Api, events: EventEmitter)
-(+) getProducts(): IProductInfo[]
-(+) addToCart(item: ICartItem): void
-(+) removeFromCart(id: string): void
-(+) getCart(): ICartItem[]
-(+) selectPaymentMethod(method: string)
-(+) getSelectedProduct(): IProductInfo | null
-(+) clearCart(): void
+(+) constructor(api: Api, events: EventEmitter) // Конструктор принимает API для получения данных и EventEmitter для управления событиями
+(+) getProducts(): IProductInfo[] // Получает список всех товаров
+(+) addToCart(item: ICartItem): void // Добавляет товар в корзину
+(+) removeFromCart(id: string): void // Удаляет товар из корзины по его идентификатору
+(+) getCart(): ICartItem[] // Возвращает список товаров в корзине
+(+) selectPaymentMethod(method: string) // Выбирает способ оплаты 
+(+) getSelectedProduct(): IProductInfo | null // Получает выбранный товар
+(+) clearCart(): void // Очищает корзину после оформления заказа
 
 IProductInfo - необходим для описания товаров. Тип связи: ассоциация с классами AppData, ProductCard.
 Поля:
-(#) id: string
-(+) title: string
-(+) description: string
-(+) price: number | null
-(+) category: string
-(+) image: string
+(#) id: string // Уникальный идентификатор товара
+(+) title: string // Название товара
+(+) description: string // Описание товара
+(+) price: number | null // Цена товара (null, если цена временно недоступна)
+(+) category: string // Категория, к которой принадлежит товар
+(+) image: string   // Ссылка на изображение товара
 
 ICartItem - необходим для отображения элементов в корзине. Тип связи: композиция с классом CartView.
 Поля:
-(#) id: string
-(+) title: string
-(+) price: number | null
-(+) quantity: number
+(#) id: string // Уникальный идентификатор товара в корзине
+(+) title: string // Название товара
+(+) price: number | null   // Цена товара (null, если цена пустая)
+(+) quantity: number // Количество единиц товара в корзине
 
 IOrderDetails - необходим для отображения заказа. Тип связи: ассоциация с классами AppData, CheckoutForm.
 Поля:
@@ -98,22 +98,22 @@ IOrderDetails - необходим для отображения заказа. �
 ### Слой View
 1. Класс Component (абстрактный) - необходим для отображения базовых элементов и их создание для пользовательского интерфейса. Тип связи: ассоциация с DOM-элементами.
 Поля:
-- (-) element: HTMLElement  
+- (-) element: HTMLElement // HTML-элемент, которым управляет компонент
 
 Методы:
-- (+) constructor(element: HTMLElement)  
-- (+) toggleClass(className: string): void  
-- (+) setText(text: string): void  
-- (+) setImage(src: string): void  
-- (+) setDisabled(isDisabled: boolean): void  
-- (+) setHidden(isHidden: boolean): void  
-- (+) setVisible(isVisible: boolean): void  
-- (+) render(): void  
+- (+) constructor(element: HTMLElement) // Конструктор принимает элемент, с которым будет работать компонент
+- (+) toggleClass(className: string): void // Переключает класс у элемента
+- (+) setText(text: string): void // Устанавливает текстовое содержимое элемента
+- (+) setImage(src: string): void // Устанавливает изображение в элемент (например, для <img>)
+- (+) setDisabled(isDisabled: boolean): void // Отключает или включает элемент
+- (+) setHidden(isHidden: boolean): void // Скрывает элемент
+- (+) setVisible(isVisible: boolean): void // Делает элемент видимым
+- (+) render(): void // Рендерит компонент
 
 2. Класс View (базовый) - расширение класса Component полем events. Тип связи: наследование от IComponent, ассоциация с EventEmitter.
 Поля и методы наследуются от класса Component. В отличие от родителя можно создать его экзепляр (в абстрактных классах нельзя создать его экземпляр)
 
-3. Класс Modal - отвечает за работы с модальными окнами. Тип связи: композиция с классами Product, Basket, OrderForm.
+3. Класс Modal - отвечает за работы с модальными окнами. Тип связи: композиция с классами Product, Cart, OrderForm.
 Поля: 
 - (-) title: string  
 - (-) content: HTMLElement | string  
@@ -124,7 +124,7 @@ IOrderDetails - необходим для отображения заказа. �
 - (+) close(): void  
 - (+) render(): void  
 
-4. Класс Card - необходим для отображения карточек. Тип связи: композиция с DOM-элементами, ассоциация с Gallery и Backet.
+4. Класс IProductCard - необходим для отображения карточек. Тип связи: композиция с DOM-элементами, ассоциация с Gallery и Backet.
 Поля:
 - (#) id: string  
 - (+) title: string  
@@ -137,7 +137,7 @@ IOrderDetails - необходим для отображения заказа. �
 Методы:
 - (+) constructor(template: HTMLTemplateElement, data: Product, onClick: (product: Product) => void)  
 - (+) render(): HTMLElement  
-- (+) setDeleteButtonHandler(handler: () => void): void  
+- (+) setAddToCartHandler(handler: () => void): void 
 
 5. Класс Gallery - отвечает за галлерею картинок на главном экране. Тип связи: агрегация с классами Card, ассоциация с AppData.
 Поля:
@@ -146,17 +146,17 @@ IOrderDetails - необходим для отображения заказа. �
 Методы:
 - (+) constructor(products: Product[])  
 - (+) render(): void  
-- (+) onProductClick(product: Product): void  
+- (+) onProductClick(product: IProductInfo): void 
 
-6. Класс Basket - отвечает за отображение корзины. Тип связи: композиция с классами BasketItem, ассоциация с AppData.
+6. Класс Cart - отвечает за отображение корзины. Тип связи: композиция с классами CartItem, ассоциация с AppData.
 Поля:
-- (-) items: BasketItem[]  
+- (-) items: CartItem[]  
 - (-) total: number  
 - (-) checkoutButton: HTMLElement  
 
 Методы:
-- (+) constructor(items: BasketItem[], checkoutButton: HTMLElement)  
-- (+) addItem(item: BasketItem): void  
+- (+) constructor(items: CartItem[], checkoutButton: HTMLElement)  
+- (+) addItem(item: CartItem): void  
 - (+) removeItem(itemId: string): void  
 - (+) calculateTotal(): number  
 - (+) render(): void  
@@ -200,48 +200,35 @@ IOrderDetails - необходим для отображения заказа. �
 10. Класс Header - отображает элементы шапки. Тип связи: композиция с DOM-элементами.
 Поля:
 - (-) logo: HTMLElement  
-- (-) basketIcon: HTMLElement  
-- (-) basketCounter: HTMLElement  
+- (-) CartIcon: HTMLElement  
+- (-) CartCounter: HTMLElement  
 
 Методы:
-- (+) constructor(logo: HTMLElement, basketIcon: HTMLElement, basketCounter: HTMLElement)  
+- (+) constructor(logo: HTMLElement, CartIcon: HTMLElement, CartCounter: HTMLElement)  
 - (+) render(): void  
-- (+) updateBasketCounter(count: number): void  
+- (+) updateCartCounter(count: number): void  
 
 ### Слой Presenter
 1. Класс EventEmitter - отвечайт за события. Тип связи: ассоциация с классами AppData, View.
 Поля: 
-- (-) _events: Map 
+- (-) _events: Map // Коллекция зарегистрированных событий и обработчиков
 
 Методы:
 - (+) constructor()  
-- (+) on: void  
-- (+) off: void  
-- (+) emit: void  
-- (+) onAll: void  
-- (+) offAll(): void  
+- (+) on: void // Добавляет обработчик события
+- (+) off: void // Удаляет обработчик события 
+- (+) emit: void // Вызывает все обработчики события с переданными данными
+- (+) onAll: void // Подписывает обработчик на все события
+- (+) offAll(): void // Отписывает обработчик от всех событий 
 - (+) trigger: (data: T) => void  
 
 2. Класс Api - отвечает за общую часть, связанную с API. Тип связи: ассоциация с AppData.
 Поля:
-- (+) baseUrl: string  
-- (-) options: RequestInit  
+- (+) baseUrl: string // Базовый URL API 
+- (-) options: RequestInit // Настройки запросов (например, заголовки)
 
 Методы:
-- (+) constructor(baseUrl: string, options?: RequestInit)  
-- (-) handleResponse(response: Response): Promise 
-- (+) get(uri: string): Promise 
-- (+) post(uri: string, data: object, method: string): Promise
-
-
-3. Класс AppPresenter - отвечает за визуал. Тип связи: ассоциация с AppData, EventEmitter, View.
-plaintext
-Поля:
-- (-) appData: AppData  
-- (-) eventEmitter: EventEmitter  
-
-Методы:
-- (+) constructor(appData: AppData, eventEmitter: EventEmitter)  
-- (+) initialize(): void  
-- (+) handleCardClick(product: Product): void  
-- (+) handleBasketUpdate(): void  
+- (+) constructor(baseUrl: string, options?: RequestInit) // Конструктор принимает URL и опциональные настройки
+- (-) handleResponse(response: Response): Promise // Обрабатывает HTTP-ответ
+- (+) get(uri: string): Promise // Выполняет GET-запрос
+- (+) post(uri: string, data: object, method: string): Promise // Выполняет POST-запрос
