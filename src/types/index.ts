@@ -2,7 +2,7 @@ export interface IProductInfo {
   id: string; 
   title: string;
   description: string;
-  price: number;
+  price: number | null;
   category: string;
   image: string;
 };
@@ -21,7 +21,6 @@ export type ICartItem = {
 
 export interface IOrderDetails {
   id: string;
-  items: ICartItem[];
   total: number;
   paymentMethod: 'Онлайн' | 'При получении';
   deliveryAddress: string;
@@ -30,7 +29,7 @@ export interface IOrderDetails {
 export interface IProductCard {
   id: string;
   title: string;
-  price: number;
+  price: number | null;
   category: string;
   image: string;
   template: HTMLTemplateElement;
@@ -40,7 +39,7 @@ export interface IProductCard {
 };
 
 export interface AppData {
-  basket: ICartItem[];
+  cart: ICartItem[];
   products: IProductInfo[];
   selectedProduct: IProductInfo;
 };
@@ -80,10 +79,10 @@ export interface IOrderConfirmation {
 
 export interface INavigationHeader {
   logo: HTMLElement; 
-  basketIcon: HTMLElement;
-  basketCounter: HTMLElement;
+  сartIcon: HTMLElement;
+  cartCounter: HTMLElement;
   render(): void;
-  updateBasketCounter(count: number): void;
+  updateCartCounter(count: number): void;
 };
 
 export interface IUserContactData {
