@@ -1,102 +1,128 @@
-export interface IProductInfo {
-  id: string; 
-  title: string;
-  description: string;
-  price: number | null;
-  category: string;
-  image: string;
-};
+import { Product } from '../components/Product';
 
-export interface ICart {
-  items: ICartItem[];
-  total: number;
+// =================== Типы ===================
+
+export type FormError = Partial<Record<keyof IOrder, string>>;
+export type PaymentMethods = 'card' | 'cash' | '';
+export type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
+export type EventName = string | RegExp;
+export type Subscriber = Function;
+export type CatalogChangeEvent = { catalog: Product[] };
+
+// =================== Общие интерфейсы ===================
+
+export interface IProduct {
+  id: string;
+  description: string;
+  image: string;
+  title: string;
+  category: string;
+  price: number | null;
 }
 
-export type ICartItem = {
-  id: string;
+export interface IBasketItem {
   title: string;
   price: number;
-  quantity: number;
-};
-
-export interface IOrderDetails {
-  id: string;
-  total: number;
-  paymentMethod: 'Онлайн' | 'При получении';
-  deliveryAddress: string;
-};
-
-export interface IProductCard {
-  id: string;
-  title: string;
-  price: number | null;
-  category: string;
-  image: string;
-  template: HTMLTemplateElement;
-  addToCartButton: HTMLButtonElement;
-  render(): HTMLElement;
-  setAddToCartHandler(handler: () => void): void;
-};
-
-export interface AppData {
-  cart: ICartItem[];
-  products: IProductInfo[];
-  selectedProduct: IProductInfo;
-};
-
-export interface IModalWindow {
-  title: string; 
-  content: HTMLElement | string;
-  open(): void;
-  close(): void;
-  render(): void;
 }
 
-export interface IBaseComponent {
-  element: HTMLElement; 
-  render(): void;
-};
+export interface ICard {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  image: string;
+  price: number | null;
+  selected: boolean;
+  button: string;
+}
 
-export interface IProductGallery {
-  products: IProductInfo[];
-  render(): void;
-  onProductClick(product: IProductInfo): void;
-};
+export interface IAppData {
+  catalog: IProduct[];
+  order: IOrder | null;
+  basket: IProduct[] | null;
+  preview: string | null;
+  loading: boolean;
+}
 
-export interface ICheckoutForm {
-  paymentMethod: string;
-  deliveryAddress: string;
-  render(): void;
-  validate(): boolean;
-  submit(): void;
-  setNextHandler(handler: () => void): void;
-};
+export interface IPage {
+  counter: number;
+  catalog: HTMLElement[];
+  locked: boolean;
+}
 
-export interface IOrderConfirmation {
+export interface IBasketView {
+  items: HTMLElement[];
   total: number;
-  render(): void;
-};
+  selected: string[];
+}
 
-export interface INavigationHeader {
-  logo: HTMLElement; 
-  сartIcon: HTMLElement;
-  cartCounter: HTMLElement;
-  render(): void;
-  updateCartCounter(count: number): void;
-};
+export interface IFormState {
+  valid: boolean;
+  errors: string[];
+}
 
-export interface IUserContactData {
+export interface IModalData {
+  content: HTMLElement;
+}
+
+// =================== Заказ ===================
+
+export interface IOrderFormEmailPhone {
   email: string;
   phone: string;
 }
 
-export interface IContactForm {
-  emailInput: HTMLInputElement;
-  phoneInput: HTMLInputElement;
-  submitButton: HTMLButtonElement;
-  formElement: HTMLFormElement;
-  render(): HTMLElement;
-  validate(): boolean;
-  getFormData(): IUserContactData;
-  onSubmit(handler: (data: IUserContactData) => void): void;
+export interface IOrderFormDelivery {
+  payment: PaymentMethods;
+  address: string;
+}
+
+export interface IOrderFormError extends IOrderFormEmailPhone, IOrderFormDelivery { }
+
+export interface IOrder extends IOrderFormError {
+  items: string[];
+  total: number;
+  payment: PaymentMethods;
+}
+
+export interface IOrderSuccess {
+  id: string;
+  total: number;
+}
+
+// =================== События ===================
+
+export interface EmitterEvent {
+  eventName: string;
+  data: unknown;
+}
+
+export interface IEvents {
+  on<T extends object>(event: EventName, callback: (data: T) => void): void;
+  emit<T extends object>(event: string, data?: T): void;
+  trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void;
+}
+
+// =================== Карточки и действия ===================
+
+export interface ICardAction {
+  onClick: (event: MouseEvent) => void;
+}
+
+// =================== Окно успеха ===================
+
+export interface ISuccess {
+  total: number;
+}
+
+export interface ISuccessActions {
+  onClick: () => void;
+}
+
+// =================== API ===================
+
+export interface ILarekAPI {
+  getProductList: () => Promise<IProduct[]>;
+  getProductItem: (id: string) => Promise<IProduct>;
+  orderProducts: (order: IOrder) => Promise<IOrderSuccess>;
 }
