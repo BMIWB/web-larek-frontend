@@ -103,6 +103,14 @@ export class AppData extends Model<IAppData> {
     this.validateOrder("contact");
   }
 
+  getTotal(): number {
+    return this.basket.reduce((total, item) => total + item.price, 0);
+  }
+
+  getPurchaseIds(): string[] {
+    return this.basket.map(item => item.id);
+  }
+
   // =================== Валидация формы ===================
 
   validateOrder(type: "delivery" | "contact"): boolean {
