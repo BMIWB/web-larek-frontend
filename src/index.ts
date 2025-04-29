@@ -5,15 +5,15 @@ import { EventEmitter } from "./components/base/events";
 import { AppData } from "./components/AppData";
 import { Product } from './components/Product';
 import { Page } from "./components/Page";
-import { cloneTemplate, ensureElement} from "./utils/utils";
+import { cloneTemplate, ensureElement } from "./utils/utils";
 import { Modal } from "./components/common/Modal";
 import { Card } from './components/Card';
-import { BasketCard} from './components/BasketCard';
+import { BasketCard } from './components/BasketCard';
 import { Basket } from './components/common/Basket';
 import { OrderAddress } from './components/OrderAddress';
 import { Success } from './components/common/Success';
 import { OrderContacts } from './components/OrderContacts';
-import { IOrderFormEmailPhone, IOrderFormDelivery, CatalogChangeEvent} from './types';
+import { IOrderFormEmailPhone, IOrderFormDelivery, CatalogChangeEvent } from './types';
 
 // --- Настройка констант и API ---
 const events = new EventEmitter();
@@ -153,39 +153,56 @@ events.on('counter:changed', () => {
 
 events.on('preview:changed', (item: Product) => {
   if (item) {
-    api.getProductItem(item.id).then((res) => {
-      item.id = res.id;
-      item.category = res.category;
-      item.title = res.title;
-      item.description = res.description;
-      item.image = res.image;
-      item.price = res.price;
-      const card = new Card('card', cloneTemplate(templates.cardPreview), {
-        onClick: () => {
-          if (appDataNew.isProductInBasket(item)) {
-            appDataNew.removeProductFromBasket(item.id);
-            modal.close();
-          } else {
-            events.emit('product:add', item);
-          }
-        },
+    api.getProductItem(item.id)
+      .then((res) => {
+        item.id = res.id;
+        item.category = res.category;
+        item.title = res.title;
+        item.description = res.description;
+        item.image = res.image;
+        item.price = res.price;
+
+        const card = new Card('card', cloneTemplate(templates.cardPreview), {
+          onClick: () => {
+            if (appDataNew.isProductInBasket(item)) {
+              appDataNew.removeProductFromBasket(item.id);
+              modal.close();
+            } else {
+              events.emit('product:add', item);
+            }
+          },
+        });
+
+        const buttonTitle: string = appDataNew.isProductInBasket(item)
+          ? 'Убрать из корзины' : 'Купить';
+
+        card.titleOfButton = buttonTitle;
+
+        modal.render({
+          content: card.render({
+            title: item.title,
+            description: item.description,
+            image: item.image,
+            price: item.price,
+            category: item.category,
+            button: buttonTitle,
+          }),
+        });
+      })
+      .catch((error) => {
+        console.error('Ошибка загрузки данных о товаре:', error);
+
+        const errorContent = document.createElement('p');
+        errorContent.classList.add('text-red');
+        errorContent.textContent = 'Не удалось загрузить данные о товаре. Попробуйте позже.';
+
+        modal.render({
+          content: errorContent
+        });
       });
-      const buttonTitle: string = appDataNew.isProductInBasket(item) ?
-        'Убрать из корзины' : 'Купить';
-      card.titleOfButton = buttonTitle;
-      modal.render({
-        content: card.render({
-          title: item.title,
-          description: item.description,
-          image: item.image,
-          price: item.price,
-          category: item.category,
-          button: buttonTitle,
-        }),
-      });
-    });
   }
 });
+
 
 // --- Финальное оформление заказа и отправка ---
 events.on('contacts:submit', () => {
@@ -234,7 +251,7 @@ function updateBasketView() {
       price: item.price,
     });
   });
-  const total = products.reduce((sum, item) => sum + item.price, 0);
+  const total = appDataNew.calculateTotal();
   if (basket.total !== total) {
     basket.total = total;
     appDataNew.order.total = total;
