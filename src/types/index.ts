@@ -80,8 +80,6 @@ export interface IOrderFormDelivery {
 export interface IOrderFormError extends IOrderFormEmailPhone, IOrderFormDelivery { }
 
 export interface IOrder extends IOrderFormError {
-  items: string[];
-  total: number;
   payment: PaymentMethods;
 }
 
