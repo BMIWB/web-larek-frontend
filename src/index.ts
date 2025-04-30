@@ -84,7 +84,7 @@ events.on('order:open', () => {
       errors: [],
     }),
   });
-  appDataNew.order.items = appDataNew.basket.map((item) => item.id);
+  appDataNew.getPurchaseIds()
 });
 
 events.on('order.payment:change', (data: {
@@ -206,26 +206,30 @@ events.on('preview:changed', (item: Product) => {
 
 // --- Финальное оформление заказа и отправка ---
 events.on('contacts:submit', () => {
-  api.orderProducts(appDataNew.order)
+  const order = {
+    ...appDataNew.order, // данные контактов и параметры доставки
+    total: appDataNew.getTotal(),
+    items: appDataNew.getPurchaseIds()
+  };
+
+  api.orderProducts(order)
     .then(() => {
-      const totalSynapses = appDataNew.order.total;
-      appDataNew.resetBasket();
-      appDataNew.resetOrder();
       const success = new Success(cloneTemplate(templates.success), {
-        onClick: () => {
-          modal.close();
-        },
+        onClick: () => modal.close(),
       });
       modal.render({
         content: success.render({
-          total: totalSynapses,
+          total: order.total,
         }),
       });
+      appDataNew.resetBasket();
+      appDataNew.resetOrder();
     })
     .catch((err) => {
       console.error(err);
     });
 });
+
 
 // --- Обработчики блокировки модального окна ---
 events.on('modal:open', () => {
@@ -251,10 +255,9 @@ function updateBasketView() {
       price: item.price,
     });
   });
-  const total = appDataNew.calculateTotal();
+  const total = appDataNew.getTotal();
   if (basket.total !== total) {
     basket.total = total;
-    appDataNew.order.total = total;
   }
 }
 
