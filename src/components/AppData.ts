@@ -17,8 +17,6 @@ export class AppData extends Model<IAppData> {
   private createEmptyOrder(): IOrder {
     return {
       payment: "",
-      items: [],
-      total: 0,
       email: "",
       phone: "",
       address: "",
@@ -74,20 +72,6 @@ export class AppData extends Model<IAppData> {
   }
 
   // =================== Работа с заказом ===================
-
-  calculateTotal(): number {
-    let totalAmount = 0;
-    this.order.items.forEach(itemId => {
-      const product = this.catalog.find(product => product.id === itemId);
-      if (product?.price) {
-        totalAmount += product.price;
-      } else {
-        console.warn(`Продукт с ID ${itemId} не найден или не имеет цены.`);
-      }
-    });
-    return totalAmount;
-  }
-
   setPaymentMethod(method: string): void {
     this.order.payment = method as PaymentMethods;
     this.validateOrder("delivery");
